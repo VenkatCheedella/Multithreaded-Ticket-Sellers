@@ -11,6 +11,7 @@ public abstract class Seller implements Runnable {
 	protected int serviceTime;
 	protected int ticketNum = 1;
 	protected int time = 0;
+	
 
 	//String type;
 	protected Seat[][] seating;
@@ -23,6 +24,7 @@ public abstract class Seller implements Runnable {
 		seating = s;
 		lock = lk;
 		this.sellerID = sellerID;
+		
 	}
 	
 	protected void calTime(Customer customer){
@@ -30,14 +32,21 @@ public abstract class Seller implements Runnable {
 		customer.setTime(time);
 	}
 	
+	
+	private String getTimeInReadableForm(int time) {
+		int min = time / 60;
+		int sec = time % 60;
+		String readableFormtime = "";
+		if(sec < 10) readableFormtime = min + ":0" + sec;
+		else readableFormtime = min + ":" + sec;
+		return readableFormtime;
+	}
+	
 	protected void printMsg(Customer customer, Seat seat){
-		int min = customer.getTime() / 60;
-		int sec = customer.getTime() % 60;
-		String time = "";
-		if(sec < 10) time = min + ":0" + sec;
-		else time = min + ":" + sec;
-		if (seat == null) System.out.println(time + "  " + sellerID + " - Sorry, the concert is sold out!");
-		else System.out.println(time + "  " + sellerID + " - Success! Your seat is " + seat.getSeatNumber());
+		String time = getTimeInReadableForm(customer.getTime());
+		String arrivalTime = getTimeInReadableForm(customer.getArrivalTime());
+		if (seat == null) System.out.println("Arrival Time: " + arrivalTime + " , Turn Around time :" + time + "  " + sellerID + " - Sorry, the concert is sold out!");
+		else System.out.println("Arrival Time: " + arrivalTime + " , Turn Around time :" + time + "  " + sellerID + " - Success! Your seat is " + seat.getSeatNumber());
 
 	}
 	
@@ -54,6 +63,7 @@ public abstract class Seller implements Runnable {
 
 	public void addCustomer(Customer c)
 	{
+		c.setqName(this.sellerID);
 		customers.add(c);
 	}
 
@@ -63,6 +73,11 @@ public abstract class Seller implements Runnable {
 		Arrays.sort(temp);
 		for(Customer c: temp)
 			customers.add(c);
+	}
+	
+	public Customer firstCustomerForService() {
+		sortQueue();
+		return customers.peek();
 	}
 
 	// seller thread to serve one time slice (1 minute)

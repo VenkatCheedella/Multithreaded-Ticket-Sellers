@@ -1,11 +1,12 @@
+
 public class Simulation {
 	public void wakeupSellers() {
 
 	}
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 
 		//number of customers per seller per hour
-		int N = 10;
+		int N = 15;
 		if (args.length > 0) N = Integer.parseInt(args[0]);
 
 		final Object lock = new Object();
@@ -13,31 +14,37 @@ public class Simulation {
 		int maxRows = 10;
 		int maxCols = 10;
 		Seat[][] seating = createSeating(maxRows, maxCols);
-
+		
+		//get next customer in each queue and place it a minHeap of size 10.
+		NextCustomerQueue nextCustomerQueue =  new NextCustomerQueue(10);
+		
 		//create 10 threads representing 10 sellers
 		Seller[] allSellers = new Seller[10];
 		for (int numSeller = 0; numSeller < 10; numSeller++)
 		{
 			if (numSeller == 0) 
-				allSellers[numSeller] = new SellerH(seating, "H" + (numSeller + 1), lock);
+				allSellers[numSeller] = new SellerH(seating, "H" + (numSeller + 1), lock, nextCustomerQueue);
 			else if (numSeller >= 1 && numSeller < 4) 
-				allSellers[numSeller] = new SellerM(seating, "M" + (numSeller), lock);
+				allSellers[numSeller] = new SellerM(seating, "M" + (numSeller), lock, nextCustomerQueue);
 			else if (numSeller >= 4 && numSeller < 10) 
-				allSellers[numSeller] = new SellerL(seating, "L" + (numSeller - 3), lock);
+				allSellers[numSeller] = new SellerL(seating, "L" + (numSeller - 3), lock, nextCustomerQueue);
 		}
 
 		//add N customers for each seller for each hour
 		//initially add N customers for each seller's queue
 		allSellers = addNewCustomers(allSellers, N);
+		
+		//fill the nextCustomerQueue
+		addNextCustomerFromEachQueueToNCQueue(allSellers, nextCustomerQueue);
 
 		//wake up all seller threads, so they can run in "parallel"
 		//lock.notifyAll(); //use notifyAll for broadcast
 		Thread []threads = new Thread[allSellers.length];
-		//for(int numSellers = 0; numSellers < allSellers.length; numSellers++)
-		//{
-		//	Thread currentThread = new Thread(allSellers[numSellers]);
-		//	currentThread.start();
-		//}
+		for(int numSellers = 0; numSellers < allSellers.length; numSellers++)
+		{
+			Thread currentThread = new Thread(allSellers[numSellers]);
+			currentThread.start();
+		}
 		for(int numSellers = 0; numSellers < allSellers.length; numSellers++)
 		{
 			threads[numSellers] = new Thread(allSellers[numSellers]);
@@ -74,7 +81,8 @@ public class Simulation {
 		//seller needs to take in parameters or have some ref to
 		//2D array, time?, universal lock
 	}
-
+	
+	
 	/**
 	 * Create a seating chart and label with seat numbers
 	 * @param maxRows: max number of rows for the chart
@@ -115,6 +123,21 @@ public class Simulation {
 			allSellers[numSeller].sortQueue();
 		}
 		return allSellers;
+	}
+	
+	/**
+	 * get the next customer from each queue and add to the nextCustomerQueue;
+	 * @throws Exception 
+	 */
+	public static void addNextCustomerFromEachQueueToNCQueue(Seller[] allSellers, NextCustomerQueue ncQueue) throws Exception {
+
+		for (Seller seller : allSellers) {
+			if(!ncQueue.addCustomer(seller.firstCustomerForService())) {
+				throw new Exception("Unable to add a customer to queue, Manage the size of the queue");
+			}
+		}
+		
+//		System.out.println(" ****** Next customers from each queue *****: \n " + ncQueue.toString());
 	}
 
 	/**

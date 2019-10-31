@@ -7,7 +7,16 @@ public class Customer implements Comparable<Customer>{
 	private int customerID;
 	private String ticket;
 	private int time;
+	private String qName;
 	
+	public String getqName() {
+		return qName;
+	}
+
+	public void setqName(String qName) {
+		this.qName = qName;
+	}
+
 	public int getTime() {
 		return time;
 	}
@@ -58,5 +67,10 @@ public class Customer implements Comparable<Customer>{
 			return 1;
 		else
 			return 0;
+	}
+	
+	@Override
+	public String toString() {
+		return "CustomerId : " + customerID + " ,qName : " + qName + ", arrivalTime : " + arrivalTime + "\n";
 	}
 }
