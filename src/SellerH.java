@@ -40,7 +40,7 @@ public class SellerH extends Seller {
 					// lock.notifyAll();
 					if (seat != null) {
 						try {
-							Thread.sleep(serviceTime * 100);
+							Thread.sleep(serviceTime);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

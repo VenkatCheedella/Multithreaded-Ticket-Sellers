@@ -1,12 +1,20 @@
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class Simulation {
+	
+	private static final Map<String, Integer> countOfCustomerForEachSeller = new HashMap<String, Integer>();
+	private static int N;
+	
 	public void wakeupSellers() {
 
 	}
 	public static void main(String[] args) throws Exception {
 
 		//number of customers per seller per hour
-		int N = 15;
+		N = 15;
 		if (args.length > 0) N = Integer.parseInt(args[0]);
 
 		final Object lock = new Object();
@@ -76,7 +84,7 @@ public class Simulation {
 			printSeating(seating, maxRows, maxCols);
 		}
 
-
+		printFinalStatusOfEachQueue();
 
 		//seller needs to take in parameters or have some ref to
 		//2D array, time?, universal lock
@@ -170,10 +178,29 @@ public class Simulation {
 			{
 				if (seating[row][col].isSeatEmpty()) 
 					System.out.printf("%7s ", "O");
-				else 
+				else {
 					System.out.printf("%7s ", seating[row][col].getCustomer().getTicket());
+					String qName = seating[row][col].getCustomer().getqName().substring(0, 1);
+					countOfCustomerForEachSeller.put(qName, countOfCustomerForEachSeller.getOrDefault(qName, 0)+1);
+				}
 			}
 			System.out.println();
+		}
+	}
+	
+	public static void printFinalStatusOfEachQueue() {
+		System.out.println("******** Count of customers serviced by each seller *********");
+		int totalNumOfHCustomers = N;
+		int totalNumOfLCustomers = N * 6;
+		int totalNumOfMCustomers = N * 3;
+		Set<Entry<String, Integer>> entrySet = countOfCustomerForEachSeller.entrySet();
+
+		for (Entry<String, Integer> seller : entrySet) {
+			String sellerId = seller.getKey();
+			int totalCustomerCount = (sellerId.equals("H")) ? totalNumOfHCustomers
+					: (sellerId.equals("M")) ? totalNumOfMCustomers : totalNumOfLCustomers;
+			System.out.println("Seller ID : " + seller.getKey() + " , count of customers serviced by seller : "
+					+ seller.getValue() + " , count of customers left out : " + (totalCustomerCount - seller.getValue()));
 		}
 	}
 

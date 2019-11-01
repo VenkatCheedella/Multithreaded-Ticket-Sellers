@@ -54,7 +54,7 @@ public class SellerM extends Seller {
 
 					if (seat != null) {
 						try {
-							Thread.sleep(serviceTime * 100);
+							Thread.sleep(serviceTime);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
